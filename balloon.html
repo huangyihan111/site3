@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #87CEEB;
+            overflow: hidden;
+        }
+
+        .balloons {
+            position: relative;
+            height: 100vh;
+        }
+
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            animation: float 8s infinite linear;
+        }
+
+        .balloon-body {
+            width: 60px;
+            height: 80px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .balloon:after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 28px;
+            width: 4px;
+            height: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2px;
+        }
+
+        .string {
+            position: absolute;
+            bottom: -28px;
+            left: 28px;
+            width: 2px;
+            height: 40px;
+            background: #666;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-120vh) translateX(20px);
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes sway {
+            0% { transform: translateX(-3px); }
+            50% { transform: translateX(3px); }
+            100% { transform: translateX(-3px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="balloons" id="balloonContainer"></div>
+
+    <script>
+        function createBalloon() {
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            
+            const colors = [
+                '255,99,71',   // 番茄红
+                '255,20,147',  // 深粉色
+                '30,144,255', // 道奇蓝
+                '50,205,50',  // 酸橙绿
+                '255,215,0',  // 金色
+                '138,43,226'   // 蓝紫色
+            ];
+
+            // 随机属性
+            const left = Math.random() * 100;  // 0-100%
+            const delay = Math.random() * 5;   // 0-5秒延迟
+            const duration = 6 + Math.random() * 4; // 6-10秒
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            balloon.style.left = `${left}%`;
+            balloon.style.animation = `float ${duration}s ${delay}s infinite linear`;
+            
+            // 气球主体
+            const body = document.createElement('div');
+            body.className = 'balloon-body';
+            body.style.backgroundColor = `rgba(${color},0.8)`;
+            body.style.boxShadow = `inset -5px -5px 10px rgba(0,0,0,0.1)`;
+            body.style.animation = 'sway 3s ease-in-out infinite';
+            
+            // 气球尾部
+            const string = document.createElement('div');
+            string.className = 'string';
+            
+            balloon.appendChild(body);
+            balloon.appendChild(string);
+            
+            return balloon;
+        }
+
+        // 创建多个气球
+        const container = document.getElementById('balloonContainer');
+        for(let i = 0; i < 15; i++) {
+            container.appendChild(createBalloon());
+        }
+    </script>
+</body>
+</html>
