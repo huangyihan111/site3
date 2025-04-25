@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+        }
+        #sky {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .balloon {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .burst {
+            animation: burst 0.5s ease-out forwards;
+        }
+        @keyframes burst {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="sky"></div>
+
+    <script>
+        const colors = ['red', 'orange', 'yellow', 'green', 'black', 'blue', 'purple'];
+        const BURST_HEIGHT = 50; // 距离顶部多少像素时爆炸
+        const INITIAL_SIZE = 30; // 初始直径
+        const MAX_SIZE = 60;    // 最大直径
+
+        class Balloon {
+            constructor() {
+                this.element = document.createElement('div');
+                this.element.className = 'balloon';
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.size = INITIAL_SIZE;
+                this.speed = Math.random() * 2 + 1; // 随机上升速度
+                this.x = Math.random() * (window.innerWidth - this.size);
+                
+                this.element.style.backgroundColor = this.color;
+                this.element.style.left = this.x + 'px';
+                this.element.style.bottom = '-' + this.size + 'px';
+                
+                document.getElementById('sky').appendChild(this.element);
+                this.rise();
+            }
+
+            rise() {
+                const start = Date.now();
+                const duration = 5000; // 最大上升时间（毫秒）
+
+                const animate = () => {
+                    const elapsed = Date.now() - start;
+                    const progress = elapsed / duration;
+                    
+                    // 更新位置和大小
+                    this.size = INITIAL_SIZE + (MAX_SIZE - INITIAL_SIZE) * progress;
+                    this.element.style.width = this.size + 'px';
+                    this.element.style.height = this.size + 'px';
+                    this.element.style.bottom = (progress * window.innerHeight * 1.5) + 'px';
+
+                    // 检查是否需要爆炸
+                    const rect = this.element.getBoundingClientRect();
+                    if (rect.top <= BURST_HEIGHT && !this.element.classList.contains('burst')) {
+                        this.burst();
+                        return;
+                    }
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.element.remove();
+                    }
+                };
+                
+                requestAnimationFrame(animate);
+            }
+
+            burst() {
+                this.element.classList.add('burst');
+                setTimeout(() => {
+                    this.element.remove();
+                }, 500);
+            }
+        }
+
+        // 每2秒创建一个新气球
+        setInterval(() => new Balloon(), 2000);
+    </script>
+</body>
+</html>
