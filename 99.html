@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Names List</title>
+</head>
+
+<body>
+    <!-- 这里假设这是名字列表表格 -->
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+        </tr>
+        <tr>
+            <td>Alice</td>
+            <td>Smith</td>
+        </tr>
+        <tr>
+            <td>Bob</td>
+            <td>Johnson</td>
+        </tr>
+        <tr>
+            <td>Charlie</td>
+            <td>Williams</td>
+        </tr>
+    </table>
+
+    <script>
+        // 页面加载完成后执行排序操作
+        window.onload = function () {
+            const table = document.getElementsByTagName('table')[0];
+            const rows = Array.from(table.rows).slice(1); // 排除表头行
+
+            // 按名字（First Name）排序
+            rows.sort((rowA, rowB) => {
+                const nameA = rowA.cells[0].textContent.trim().toLowerCase();
+                const nameB = rowB.cells[0].textContent.trim().toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            // 清空表格中除表头外的所有行
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            // 将排序后的行重新添加到表格中
+            rows.forEach(row => {
+                table.appendChild(row);
+            });
+        };
+    </script>
+</body>
+
+</html>    
