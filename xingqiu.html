@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Solar System</title>
+    <style>
+        canvas {
+            background: #000;
+            display: block;
+            margin: 20px auto;
+        }
+        .data-table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            display: none;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .data-table th {
+            background: #2c3e50;
+            color: white;
+            position: relative;
+        }
+        .data-table th:hover {
+            background: #34495e;
+        }
+        .color-box {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid #999;
+        }
+        .sort-arrow {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="spaceCanvas" width="1200" height="800"></canvas>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th data-type="text">天体 <span class="sort-arrow">▼</span></th>
+                <th data-type="number">质量 (kg) <span class="sort-arrow">▼</span></th>
+                <th data-type="number">轨道半径 <span class="sort-arrow">▼</span></th>
+                <th data-type="color">颜色 <span class="sort-arrow">▼</span></th>
+                <th data-type="number">直径 <span class="sort-arrow">▼</span></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+<script>
+const canvas = document.getElementById('spaceCanvas');
+const ctx = canvas.getContext('2d');
+const bodies = [
+    // 天体数据 (实际比例调整后的显示参数)
+    { 
+        name: 'Sun', color: '#FFD700', 
+        mass: 1.989e30, orbit: 0, 
+        radius: 696340, displaySize: 40,
+        speed: 0
+    },
+    { 
+        name: 'Mercury', color: '#A0522D', 
+        mass: 3.3011e23, orbit: 57.9, 
+        radius: 2439.7, displaySize: 8,
+        speed: 0.047
+    },
+    { 
+        name: 'Venus', color: '#DEB887', 
+        mass: 4.8675e24, orbit: 108.2, 
+        radius: 6051.8, displaySize: 12,
+        speed: 0.035
+    },
+    { 
+        name: 'Earth', color: '#4169E1', 
+        mass: 5.972e24, orbit: 149.6, 
+        radius: 6371, displaySize: 13,
+        speed: 0.03
+    },
+    { 
+        name: 'Mars', color: '#CD5C5C', 
+        mass: 6.4171e23, orbit: 227.9, 
+        radius: 3389.5, displaySize: 10,
+        speed: 0.024
+    },
+    { 
+        name: 'Jupiter', color: '#DAA520', 
+        mass: 1.898e27, orbit: 778.3, 
+        radius: 69911, displaySize: 30,
+        speed: 0.013
+    },
+    { 
+        name: 'Saturn', color: '#F4A460', 
+        mass: 5.683e26, orbit: 1427, 
+        radius: 58232, displaySize: 25,
+        speed: 0.009
+    },
+    { 
+        name: 'Uranus', color: '#87CEEB', 
+        mass: 8.681e25, orbit: 2871, 
+        radius: 25362, displaySize: 18,
+        speed: 0.006
+    },
+    { 
+        name: 'Neptune', color: '#4682B4', 
+        mass: 1.024e26, orbit: 4497, 
+        radius: 24622, displaySize: 17,
+        speed: 0.005
+    }
+];
+
+// 动画系统
+let animationFrame;
+function initAnimation() {
+    const centerX = canvas.width/2;
+    const centerY = canvas.height/2;
+    
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 绘制太阳
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, bodies[0].displaySize, 0, Math.PI*2);
+        ctx.fillStyle = bodies[0].color;
+        ctx.fill();
+
+        // 绘制行星
+        bodies.slice(1).forEach(planet => {
+            planet.angle = (planet.angle || 0) + planet.speed;
+            
+            const x = centerX + Math.cos(planet.angle) * planet.orbit/3;
+            const y = centerY + Math.sin(planet.angle) * planet.orbit/3;
+            
+            // 绘制轨道
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, planet.orbit/3, 0, Math.PI*2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.stroke();
+            
+            // 绘制行星
+            ctx.beginPath();
+            ctx.arc(x, y, planet.displaySize, 0, Math.PI*2);
+            ctx.fillStyle = planet.color;
+            ctx.fill();
+        });
+
+        animationFrame = requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+// 表格系统
+document.addEventListener('click', (e) => {
+    if(e.target.tagName !== 'TH') {
+        const table = document.querySelector('.data-table');
+        table.style.display = table.style.display === 'none' ? 'table' : 'none';
+        if(table.style.display === 'table') generateTable();
+    }
+});
+
+function generateTable() {
+    const tbody = document.querySelector('tbody');
+    tbody.innerHTML = '';
+    
+    bodies.forEach(body => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${body.name}</td>
+            <td data-value="${body.mass}">${formatMass(body.mass)}</td>
+            <td>${(body.orbit).toLocaleString()}M km</td>
+            <td data-value="${body.color}">
+                <span class="color-box" style="background:${body.color}"></span>
+                ${body.color}
+            </td>
+            <td>${(body.radius*2).toLocaleString()} km</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function formatMass(kg) {
+    const exp = Math.floor(Math.log10(kg));
+    const base = kg / Math.pow(10, exp);
+    return `${base.toFixed(3)} × 10<sup>${exp}</sup>`;
+}
+
+// 排序功能
+let currentSort = { key: null, asc: true };
+document.querySelectorAll('th').forEach(th => {
+    th.addEventListener('click', () => {
+        const type = th.dataset.type;
+        const index = th.cellIndex;
+        const tbody = document.querySelector('tbody');
+        
+        const rows = Array.from(tbody.rows).sort((a, b) => {
+            const aVal = getCellValue(a.cells[index], type);
+            const bVal = getCellValue(b.cells[index], type);
+            
+            if(type === 'number') return (aVal - bVal) * (currentSort.asc ? 1 : -1);
+            return aVal.toString().localeCompare(bVal) * (currentSort.asc ? 1 : -1);
+        });
+
+        if(currentSort.key === index) currentSort.asc = !currentSort.asc;
+        else currentSort = { key: index, asc: true };
+
+        tbody.append(...rows);
+        updateSortArrow(th);
+    });
+});
+
+function getCellValue(cell, type) {
+    const rawValue = cell.dataset.value || cell.textContent;
+    if(type === 'number') return parseFloat(rawValue.replace(/[^\d.]/g, ''));
+    return rawValue;
+}
+
+function updateSortArrow(th) {
+    document.querySelectorAll('th').forEach(header => {
+        header.querySelector('.sort-arrow').textContent = 
+            header === th ? (currentSort.asc ? '▲' : '▼') : '▼';
+    });
+}
+
+// 初始化
+initAnimation();
+</script>
+</body>
+</html>
